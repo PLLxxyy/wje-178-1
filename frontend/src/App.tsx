@@ -10,6 +10,7 @@ import GroupClasses from './pages/GroupClasses';
 import MyClasses from './pages/MyClasses';
 import Checkin from './pages/Checkin';
 import History from './pages/History';
+import Notifications from './pages/Notifications';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminClasses from './pages/AdminClasses';
 import AdminAnnouncements from './pages/AdminAnnouncements';
@@ -40,6 +41,9 @@ export default function App() {
       } />
       <Route path="/history" element={
         <ProtectedRoute><History /></ProtectedRoute>
+      } />
+      <Route path="/notifications" element={
+        <ProtectedRoute><Notifications /></ProtectedRoute>
       } />
 
       <Route path="/admin/dashboard" element={

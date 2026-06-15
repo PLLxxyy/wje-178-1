@@ -115,7 +115,20 @@ router.post('/:id/cancel', authMiddleware, (req: AuthRequest, res: Response) => 
         db.prepare("UPDATE class_bookings SET status = 'booked', queue_position = NULL WHERE id = ?").run(nextWaitlisted.id);
         db.prepare('UPDATE group_classes SET current_booked = current_booked + 1 WHERE id = ?').run(classId);
 
-        // 更新剩余候补队列位置
+        const promotedClass = db.prepare('SELECT name, class_time FROM group_classes WHERE id = ?').get(classId) as any;
+        if (promotedClass) {
+          const classTimeStr = promotedClass.class_time ? promotedClass.class_time.replace('T', ' ').substring(0, 16) : '';
+          db.prepare(
+            'INSERT INTO notifications (user_id, title, content, type, related_id) VALUES (?, ?, ?, ?, ?)'
+          ).run(
+            nextWaitlisted.user_id,
+            '候补转正通知',
+            `您候补的团课「${promotedClass.name}」（${classTimeStr}）已有空位，已自动转正为正式预约，请准时参加！`,
+            'waitlist_promoted',
+            classId
+          );
+        }
+
         db.prepare(
           "UPDATE class_bookings SET queue_position = queue_position - 1 WHERE class_id = ? AND status = 'waitlisted'"
         ).run(classId);

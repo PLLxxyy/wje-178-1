@@ -1,11 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getUser, logout, isAdmin } from '../utils/api';
+import { getUser, logout, isAdmin, getUnreadCount } from '../utils/api';
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = getUser();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const count = await getUnreadCount();
+        setUnreadCount(count);
+      } catch {}
+    };
+    if (user) fetchUnread();
+    const interval = setInterval(() => { if (user) fetchUnread(); }, 30000);
+    return () => clearInterval(interval);
+  }, [user, location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -38,6 +51,32 @@ export default function Header() {
           <span className="header-logo">社区健身房</span>
         </div>
         <div className="header-user">
+          <span
+            className="nav-link"
+            style={{ cursor: 'pointer', position: 'relative', marginRight: 12 }}
+            onClick={() => navigate('/notifications')}
+          >
+            消息
+            {unreadCount > 0 && (
+              <span style={{
+                position: 'absolute',
+                top: -6,
+                right: -10,
+                background: '#f5222d',
+                color: '#fff',
+                fontSize: 10,
+                fontWeight: 700,
+                borderRadius: 8,
+                minWidth: 16,
+                height: 16,
+                lineHeight: '16px',
+                textAlign: 'center',
+                padding: '0 4px',
+              }}>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </span>
           <span className="user-name">{user?.name}</span>
           <span className="user-role">{user?.role === 'admin' ? '管理员' : '会员'}</span>
           {isAdmin() && (

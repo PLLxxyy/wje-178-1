@@ -84,3 +84,20 @@ export function isAdmin(): boolean {
   const user = getUser();
   return user?.role === 'admin';
 }
+
+export async function getNotifications(): Promise<any[]> {
+  return api('/notifications');
+}
+
+export async function getUnreadCount(): Promise<number> {
+  const data = await api('/notifications/unread-count');
+  return data.count;
+}
+
+export async function markNotificationRead(id: number): Promise<void> {
+  await api(`/notifications/${id}/read`, { method: 'PUT' });
+}
+
+export async function markAllNotificationsRead(): Promise<void> {
+  await api('/notifications/read-all', { method: 'PUT' });
+}

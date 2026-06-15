@@ -81,6 +81,18 @@ db.exec(`
     type TEXT NOT NULL DEFAULT 'maintenance',
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
   );
+
+  CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'waitlist_promoted',
+    is_read INTEGER NOT NULL DEFAULT 0,
+    related_id INTEGER,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+  );
 `);
 
 export default db;

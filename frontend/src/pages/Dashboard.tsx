@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, getUser } from '../utils/api';
+import { api, getUser, getUnreadCount } from '../utils/api';
 import Header from '../components/Header';
 
 export default function Dashboard() {
   const [passes, setPasses] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
   const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const user = getUser();
@@ -17,14 +18,16 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const [passesData, classesData, annData] = await Promise.all([
+      const [passesData, classesData, annData, unread] = await Promise.all([
         api('/passes/my'),
         api('/classes'),
-        api('/admin/announcements')
+        api('/admin/announcements'),
+        getUnreadCount()
       ]);
       setPasses(passesData);
       setClasses(classesData.filter((c: any) => c.status !== 'cancelled').slice(0, 5));
       setAnnouncements(annData.slice(0, 3));
+      setUnreadCount(unread);
     } catch (err) {
       console.error('加载数据失败', err);
     } finally {
@@ -70,6 +73,11 @@ export default function Dashboard() {
           <div className="stat-card stat-purple" onClick={() => navigate('/checkin')} style={{ cursor: 'pointer' }}>
             <div className="stat-label">快速核销</div>
             <div className="stat-value" style={{ fontSize: '24px' }}>扫码入场</div>
+          </div>
+          <div className="stat-card" onClick={() => navigate('/notifications')} style={{ cursor: 'pointer', background: unreadCount > 0 ? '#fff1f0' : undefined }}>
+            <div className="stat-label">未读消息</div>
+            <div className="stat-value" style={{ color: unreadCount > 0 ? '#f5222d' : undefined }}>{unreadCount}</div>
+            <div className="stat-label">条</div>
           </div>
         </div>
 

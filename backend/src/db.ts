@@ -1,8 +1,9 @@
 import Database from 'better-sqlite3';
 import path from 'path';
+import type { Database as DatabaseType } from 'better-sqlite3';
 
 const dbPath = path.join(__dirname, '..', 'gym.db');
-const db = new Database(dbPath);
+const db: DatabaseType = new Database(dbPath);
 
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');

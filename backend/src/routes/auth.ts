@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import db from '../db';
-import { generateToken } from '../middleware/auth';
+import { generateToken, AuthRequest, authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
@@ -79,26 +79,18 @@ router.post('/login', (req: Request, res: Response) => {
 });
 
 // 获取当前用户信息
-router.get('/me', (req: Request, res: Response) => {
+router.get('/me', authMiddleware, (req: AuthRequest, res: Response) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      res.status(401).json({ error: '未登录' });
-      return;
-    }
-
-    const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, 'gym-pass-secret-key-2024') as { userId: number };
-
-    const user = db.prepare('SELECT id, phone, name, role, created_at FROM users WHERE id = ?').get(decoded.userId);
+    const userId = req.userId!;
+    const user = db.prepare('SELECT id, phone, name, role, created_at FROM users WHERE id = ?').get(userId);
     if (!user) {
       res.status(404).json({ error: '用户不存在' });
       return;
     }
 
     res.json(user);
-  } catch {
-    res.status(401).json({ error: '登录已过期' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 });
 
